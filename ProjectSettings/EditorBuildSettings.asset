@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Boot.unity
+    guid: 0fd62b9ae8479204982f2c88a1c14f31
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 2c6230637dc508f4b839c6f13ac53fe7
+  - enabled: 1
+    path: Assets/Scenes/Duel_Staircase.unity
+    guid: 1118f3e90da66d54584867a6ff2613c5
+  - enabled: 1
+    path: Assets/Scenes/Duel_NMU.unity
+    guid: 818785034a6040f47b0f46aa20117255
+  m_configObjects:
+    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 2b87e25a0df293a47944f76f0c2a141d, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: e461b6c587fdf8e418ac1c9da14b2606, type: 2}

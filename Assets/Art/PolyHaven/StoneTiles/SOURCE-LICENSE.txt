@@ -1,0 +1,4 @@
+Stone Tiles albedo and OpenGL normal maps, 2K.
+Source: https://polyhaven.com/a/stone_tiles
+License: CC0 (Poly Haven).
+Downloaded 2026-10-15 via https://api.polyhaven.com/files/stone_tiles

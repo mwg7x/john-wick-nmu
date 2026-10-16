@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a5757e0000040008000000000000005, type: 3}
+  m_Name: Swift
+  m_EditorClassIdentifier: 
+  range: 100
+  fireCooldown: 0.14
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  headDamage: 70
+  chestDamage: 35
+  torsoDamage: 35
+  armDamage: 18
+  legDamage: 18
+  recoilDegrees: 0.55
+  accuracySpreadDegrees: 0.24
+  magazineSize: 18
+  reloadSeconds: 1.1
+  shotSound: {fileID: 0}
+  muzzleFlashPrefab: {fileID: 0}
+  impactPrefab: {fileID: 0}

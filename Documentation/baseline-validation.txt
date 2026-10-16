@@ -1,0 +1,4 @@
+Result: FAIL
+Stage: 16
+Checks: 141
+Validation timed out. Duel=Victory round=3 cue=Hidden remaining=0 timescale=1 loading=False playing=True scene=Duel_Staircase frame=103815

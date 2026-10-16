@@ -1,0 +1,259 @@
+{
+  "name": "LastStep",
+  "maps": [
+    {
+      "name": "Player",
+      "id": "1a5757e0000040008000000000000014",
+      "actions": [
+        {
+          "name": "Aim",
+          "type": "Button",
+          "id": "1a5757e0000040008000000000000015",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Fire",
+          "type": "Button",
+          "id": "1a5757e0000040008000000000000016",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Pause",
+          "type": "Button",
+          "id": "1a5757e0000040008000000000000017",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Look",
+          "type": "Value",
+          "id": "1a5757e0000040008000000000000018",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": true
+        },
+        {
+          "name": "Move",
+          "type": "Value",
+          "id": "0262e969-ef24-4580-bb46-3000f273f05a",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": true
+        }
+      ],
+      "bindings": [
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000019",
+          "path": "<Mouse>/rightButton",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Aim",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000020",
+          "path": "<Mouse>/leftButton",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Fire",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000021",
+          "path": "<Keyboard>/escape",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Pause",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000022",
+          "path": "<Mouse>/delta",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Look",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "WASD",
+          "id": "b8031a6a-b204-4d03-bbc5-fb20b73df10c",
+          "path": "2DVector",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Move",
+          "isComposite": true,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "up",
+          "id": "776859ac-e42f-4dd9-8b4f-8ccd5b7cefdb",
+          "path": "<Keyboard>/w",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Move",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "down",
+          "id": "1f6fb0bc-bc7c-4078-91e4-69d5e2065719",
+          "path": "<Keyboard>/s",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Move",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "left",
+          "id": "f6a3296f-74b8-407b-969e-1369743da075",
+          "path": "<Keyboard>/a",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Move",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "right",
+          "id": "29d2f2f6-b6ad-4b87-ba5b-94961e2f9408",
+          "path": "<Keyboard>/d",
+          "interactions": "",
+          "processors": "",
+          "groups": "KeyboardMouse",
+          "action": "Move",
+          "isComposite": false,
+          "isPartOfComposite": true
+        }
+      ]
+    },
+    {
+      "name": "VR",
+      "id": "1a5757e0000040008000000000000023",
+      "actions": [
+        {
+          "name": "Fire",
+          "type": "Button",
+          "id": "1a5757e0000040008000000000000024",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Grab",
+          "type": "Button",
+          "id": "1a5757e0000040008000000000000025",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "Turn",
+          "type": "Value",
+          "id": "1a5757e0000040008000000000000026",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": true
+        }
+      ],
+      "bindings": [
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000027",
+          "path": "<XRController>{RightHand}/triggerPressed",
+          "interactions": "",
+          "processors": "",
+          "groups": "XR",
+          "action": "Fire",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000028",
+          "path": "<XRController>{RightHand}/gripPressed",
+          "interactions": "",
+          "processors": "",
+          "groups": "XR",
+          "action": "Grab",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "1a5757e0000040008000000000000029",
+          "path": "<XRController>{LeftHand}/primary2DAxis",
+          "interactions": "",
+          "processors": "",
+          "groups": "XR",
+          "action": "Turn",
+          "isComposite": false,
+          "isPartOfComposite": false
+        }
+      ]
+    }
+  ],
+  "controlSchemes": [
+    {
+      "name": "KeyboardMouse",
+      "bindingGroup": "KeyboardMouse",
+      "devices": [
+        {
+          "devicePath": "<Keyboard>",
+          "isOptional": false,
+          "isOR": false
+        },
+        {
+          "devicePath": "<Mouse>",
+          "isOptional": false,
+          "isOR": false
+        }
+      ]
+    },
+    {
+      "name": "XR",
+      "bindingGroup": "XR",
+      "devices": [
+        {
+          "devicePath": "<XRController>{LeftHand}",
+          "isOptional": true,
+          "isOR": false
+        },
+        {
+          "devicePath": "<XRController>{RightHand}",
+          "isOptional": true,
+          "isOR": false
+        }
+      ]
+    }
+  ]
+}

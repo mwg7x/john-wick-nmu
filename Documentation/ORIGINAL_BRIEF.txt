@@ -1,0 +1,1233 @@
+You are a senior Unity 6 developer and VR gameplay engineer.
+
+I want you to build a complete Unity game project called:
+
+LAST STEP
+
+It is an original cinematic pistol duel game set on a large outdoor staircase at night.
+
+The game may be inspired by cinematic duel scenes, but you MUST NOT use copyrighted characters, names, dialogue, logos, music, exact costumes, or exact movie environments.
+
+The final project must support:
+
+* Windows PC
+* PC VR
+* Meta Quest standalone VR
+
+Use one shared gameplay system and separate input systems for PC and VR.
+
+⸻
+
+MAIN GOAL
+
+Build a fully playable duel game where:
+
+1. The player faces an AI opponent.
+2. They begin far apart.
+3. A countdown starts.
+4. Shooting is locked until the FIRE signal.
+5. Both the player and AI can shoot.
+6. If both survive, they move closer.
+7. The duel repeats at a shorter distance.
+8. The game ends when either participant is defeated.
+
+⸻
+
+UNITY VERSION AND TECHNOLOGY
+
+Use:
+
+* Unity 6
+* Universal Render Pipeline
+* C#
+* New Unity Input System
+* XR Plug-in Management
+* OpenXR
+* XR Interaction Toolkit
+* TextMeshPro
+* Unity Animator
+* Unity Audio Mixer
+
+Use clean architecture.
+
+Avoid deprecated Unity APIs.
+
+⸻
+
+PROJECT STRUCTURE
+
+Create this folder structure:
+
+Assets/
+Art/
+Characters/
+Environment/
+Weapons/
+Audio/
+Music/
+SFX/
+Ambience/
+Materials/
+Prefabs/
+Characters/
+Weapons/
+Environment/
+UI/
+Scenes/
+Scripts/
+Core/
+AI/
+Player/
+Weapons/
+UI/
+VR/
+Audio/
+Utilities/
+ScriptableObjects/
+Settings/
+
+⸻
+
+SCENES
+
+Create these scenes:
+
+1. Boot
+2. MainMenu
+3. Duel_Staircase
+
+⸻
+
+GAME FLOW
+
+The game flow must be:
+
+Boot
+
+→ Main Menu
+
+→ Start Duel
+
+→ Intro
+
+→ Prepare
+
+→ Countdown
+
+→ FIRE
+
+→ Both sides may shoot
+
+→ Resolve damage
+
+→ Move to next distance
+
+→ Repeat
+
+→ Victory or Defeat
+
+→ Results Screen
+
+→ Restart or Main Menu
+
+⸻
+
+GAME STATES
+
+Create this enum:
+
+public enum GameState
+{
+Boot,
+MainMenu,
+Intro,
+Preparing,
+Countdown,
+Fire,
+Resolving,
+Transition,
+Victory,
+Defeat,
+Paused
+}
+
+The DuelManager must control the current state.
+
+Use events whenever possible.
+
+Avoid tightly coupling systems together.
+
+⸻
+
+DUEL DISTANCES
+
+The duel has 3 stages.
+
+Stage 1:
+30 meters
+
+Stage 2:
+20 meters
+
+Stage 3:
+10 meters
+
+Store these values in Inspector-editable variables.
+
+Do not hard-code everything.
+
+After each exchange:
+
+* Check if player is alive.
+* Check if enemy is alive.
+* If both survive, move to next position.
+* Reset shot availability.
+* Start next countdown.
+
+⸻
+
+POSITION SYSTEM
+
+Create predefined position markers.
+
+Example:
+
+PlayerPosition_30
+EnemyPosition_30
+
+PlayerPosition_20
+EnemyPosition_20
+
+PlayerPosition_10
+EnemyPosition_10
+
+Create:
+
+DuelPositionManager.cs
+
+The system must move the participants to the correct duel positions between rounds.
+
+For PC:
+Allow a short cinematic transition.
+
+For VR:
+Use screen fade to black before teleporting XR Origin.
+
+Never force VR camera movement.
+
+⸻
+
+COUNTDOWN SYSTEM
+
+Before every exchange display:
+
+ROUND 1
+
+30 METERS
+
+3
+2
+1
+
+DRAW
+
+FIRE
+
+Create:
+
+CountdownController.cs
+
+During:
+
+3
+2
+1
+DRAW
+
+shooting must be disabled.
+
+When FIRE appears:
+
+shooting becomes enabled.
+
+Expose all timing values in Inspector.
+
+Example:
+
+Countdown number duration = 1 second
+DRAW duration = 0.6 seconds
+FIRE display duration = 1 second
+
+⸻
+
+FALSE START SYSTEM
+
+If the player fires before FIRE:
+
+Trigger False Start.
+
+Create:
+
+FalseStartManager.cs
+
+Default rules:
+
+First false start:
+Warning.
+
+Second false start:
+Player loses the duel.
+
+Display:
+
+FALSE START
+
+FIRST WARNING
+
+or
+
+DISQUALIFIED
+
+Make the number of allowed false starts editable.
+
+⸻
+
+SHOT AVAILABILITY
+
+Each participant gets only ONE shot per exchange.
+
+Use:
+
+bool playerShotAvailable;
+bool enemyShotAvailable;
+
+Important:
+
+The player does NOT need to shoot immediately after FIRE.
+
+The AI may fire first.
+
+If the player survives and still has a shot available, the player can fire afterwards.
+
+Once a participant shoots:
+
+shotAvailable = false.
+
+The player cannot reload during the same exchange.
+
+⸻
+
+HEALTH SYSTEM
+
+Create:
+
+Health.cs
+
+Default health:
+
+Player = 100
+Enemy = 100
+
+Create hit zones.
+
+Damage example:
+
+Head = 100
+Chest = 50
+Torso = 40
+Arm = 20
+Leg = 20
+
+Use an enum:
+
+public enum HitZone
+{
+Head,
+Chest,
+Torso,
+Arm,
+Leg
+}
+
+Damage values must be editable.
+
+Do not use gore.
+
+Use hit reactions only.
+
+⸻
+
+PLAYER SHOOTING
+
+Create:
+
+PlayerWeapon.cs
+WeaponController.cs
+HitDetector.cs
+WeaponData.cs
+
+PC controls:
+
+Mouse:
+Aim
+
+Left Mouse:
+Fire
+
+Right Mouse:
+Aim / Focus
+
+ESC:
+Pause
+
+Use raycast shooting.
+
+The weapon system must include:
+
+* fire cooldown protection
+* shot permission check
+* shot available check
+* muzzle flash
+* gunshot sound
+* recoil
+* camera shake
+* hit detection
+* impact effect
+* damage
+* animation hook
+
+Use layers to prevent accidental self-hits.
+
+⸻
+
+PC CAMERA
+
+Create a PC camera controller.
+
+Use either:
+
+First Person
+
+or
+
+Over-the-Shoulder Third Person
+
+Make the camera mode switchable.
+
+Do not move camera during aiming in a way that breaks gameplay.
+
+Add small recoil only.
+
+⸻
+
+AI OPPONENT
+
+Create:
+
+EnemyAI.cs
+EnemyAimController.cs
+EnemyWeapon.cs
+EnemyReactionController.cs
+
+Use a finite state machine.
+
+AI states:
+
+Idle
+Prepare
+WaitingForFire
+Reacting
+Aiming
+Shooting
+Waiting
+HitReaction
+Moving
+Dead
+
+Create:
+
+public enum EnemyState
+
+The AI must wait for FIRE.
+
+Do not allow the normal AI to cheat.
+
+⸻
+
+AI REACTION SYSTEM
+
+The AI must have realistic reaction delay.
+
+Use a randomized delay.
+
+Example:
+
+Easy:
+Reaction Time = 1.0 to 1.5 seconds
+Accuracy = 45%
+
+Normal:
+Reaction Time = 0.6 to 1.0 seconds
+Accuracy = 65%
+
+Hard:
+Reaction Time = 0.35 to 0.7 seconds
+Accuracy = 80%
+
+Add:
+
+* Miss chance
+* Reaction randomness
+* Aim delay
+* Critical hit chance
+
+Never make the AI perfect.
+
+⸻
+
+AI DIFFICULTY SYSTEM
+
+Create a ScriptableObject:
+
+DifficultySettings.cs
+
+Variables:
+
+DifficultyName
+MinReactionTime
+MaxReactionTime
+Accuracy
+MissChance
+CriticalHitChance
+AimSpeed
+
+Create:
+
+Easy
+Normal
+Hard
+
+difficulty assets.
+
+⸻
+
+AI AIMING
+
+The AI must not simply raycast perfectly at the player’s head.
+
+Instead:
+
+Calculate an aim point.
+
+Apply random error based on accuracy.
+
+The lower the accuracy:
+the larger the aim offset.
+
+Use configurable spread.
+
+⸻
+
+VR SUPPORT
+
+Use:
+
+OpenXR
+XR Interaction Toolkit
+XR Origin
+
+The VR player must be able to:
+
+* See their hand/controller
+* Hold a pistol
+* Aim physically
+* Pull trigger to shoot
+* Receive haptic feedback
+* Hear spatial audio
+
+Create:
+
+VRInputController.cs
+XRPlayerSetup.cs
+VRWeaponController.cs
+HapticController.cs
+
+⸻
+
+VR COMFORT
+
+Important:
+
+Avoid forced locomotion.
+
+During duel transitions:
+
+Fade to black.
+
+Teleport XR Origin.
+
+Fade back in.
+
+Create:
+
+VRFadeController.cs
+
+Also include:
+
+* Left handed mode
+* Right handed mode
+* Seated mode
+* Standing mode
+* Height calibration
+* Snap turning
+* Comfort vignette option
+
+Never rotate the VR camera automatically.
+
+⸻
+
+VR PISTOL SYSTEM
+
+The pistol should work with XR Grab Interactable.
+
+It must:
+
+* Be grabbable
+* Attach correctly to hand
+* Aim using controller orientation
+* Fire using trigger input
+* Apply controller haptic feedback
+* Play muzzle flash
+* Play spatial gunshot
+* Use raycast hit detection
+
+Do not require manual magazine reloading during duel rounds.
+
+⸻
+
+MAIN MENU
+
+Create a cinematic menu.
+
+Buttons:
+
+START DUEL
+
+VR MODE
+
+SETTINGS
+
+QUIT
+
+Settings:
+
+Difficulty
+
+PC / VR Mode
+
+Audio Volume
+
+Music Volume
+
+Sensitivity
+
+Left / Right Handed
+
+VR Comfort Options
+
+⸻
+
+HUD
+
+Keep gameplay HUD minimal.
+
+Display:
+
+Player Health
+Enemy Health
+Round
+Distance
+
+Countdown must appear centered.
+
+Example:
+
+ROUND 1
+
+30 METERS
+
+3
+2
+1
+
+DRAW
+
+FIRE
+
+⸻
+
+END SCREEN
+
+Victory:
+
+DUEL WON
+
+Defeat:
+
+DUEL LOST
+
+Buttons:
+
+RESTART
+
+MAIN MENU
+
+⸻
+
+ENVIRONMENT
+
+Build a prototype staircase using Unity primitives first.
+
+The greybox level must include:
+
+* Very long stone staircase
+* Platforms between stair sections
+* Stone walls
+* Railings
+* Lamps
+* Statues or pillars
+* Duel position markers
+* Distant city background
+
+Later add polish:
+
+* Night sky
+* Fog
+* Rain
+* Wet materials
+* Reflections
+* Distant city lights
+
+Keep the environment original.
+
+⸻
+
+LIGHTING
+
+Use URP.
+
+Use optimized lighting.
+
+For PC:
+Allow higher visual quality.
+
+For Quest:
+Use baked lighting wherever possible.
+
+Avoid too many realtime lights.
+
+Avoid expensive shadows.
+
+⸻
+
+WEATHER
+
+Add optional:
+
+Light rain
+
+Fog
+
+Wet ground effect
+
+Keep particle count low on VR.
+
+Add separate quality settings.
+
+⸻
+
+AUDIO SYSTEM
+
+Create:
+
+AudioManager.cs
+
+Audio categories:
+
+Music
+SFX
+Ambience
+UI
+
+Required sounds:
+
+Countdown
+DRAW
+FIRE
+Pistol shot
+Bullet impact
+False Start warning
+Hit reaction
+Wind
+Rain
+Distant city ambience
+Heartbeat
+Victory
+Defeat
+
+Use placeholders if audio assets do not exist.
+
+Do not use copyrighted movie music.
+
+⸻
+
+ANIMATION
+
+Enemy animations:
+
+Idle
+Ready
+Draw
+Aim
+Shoot
+Hit
+Death
+Walk
+
+Player animation hooks:
+
+Draw Weapon
+Aim
+Shoot
+Hit
+
+For VR:
+Do not animate camera.
+
+Only animate hands or weapon.
+
+⸻
+
+GAME MANAGER
+
+Create:
+
+GameManager.cs
+
+Responsibilities:
+
+Scene flow
+Pause
+Game mode selection
+Difficulty selection
+Persistent settings
+
+Do NOT put duel logic inside GameManager.
+
+⸻
+
+DUEL MANAGER
+
+Create:
+
+DuelManager.cs
+
+Responsibilities:
+
+Current GameState
+Current round
+Current duel distance
+Countdown coordination
+Shot permissions
+Shot availability
+Resolving damage
+Round completion
+Transition
+Victory
+Defeat
+
+Expose important events:
+
+OnRoundStarted
+OnCountdownStarted
+OnFireAllowed
+OnPlayerShot
+OnEnemyShot
+OnRoundFinished
+OnVictory
+OnDefeat
+
+⸻
+
+ROUND MANAGER
+
+Create:
+
+RoundManager.cs
+
+Responsibilities:
+
+Round number
+Distance
+Position selection
+Shot reset
+Round progression
+
+⸻
+
+UI MANAGER
+
+Create:
+
+UIManager.cs
+
+Responsibilities:
+
+Health UI
+Round UI
+Distance UI
+Countdown UI
+Warning UI
+Victory UI
+Defeat UI
+
+Use TextMeshPro.
+
+⸻
+
+INPUT SYSTEM
+
+Use Unity Input System.
+
+Create actions:
+
+Player/Aim
+
+Player/Fire
+
+Player/Pause
+
+Player/Look
+
+VR/Fire
+
+VR/Grab
+
+VR/Turn
+
+Create separate controllers:
+
+PCInputController.cs
+
+VRInputController.cs
+
+Gameplay systems must NOT directly check keyboard or controller input.
+
+They should receive input through these controllers.
+
+⸻
+
+SCRIPTABLE OBJECTS
+
+Use ScriptableObjects for:
+
+WeaponData
+
+DifficultySettings
+
+DuelSettings
+
+AudioSettings if useful
+
+⸻
+
+DUEL SETTINGS
+
+Create:
+
+DuelSettings.cs
+
+Variables:
+
+StartingHealth
+RoundDistances
+CountdownDuration
+DrawDuration
+FireDisplayDuration
+AllowedFalseStarts
+RoundTransitionDuration
+
+⸻
+
+SLOW MOTION
+
+For PC only:
+
+Allow a very brief slow-motion effect after the final hit.
+
+Keep it optional.
+
+Do NOT apply time-scale slow motion in a way that causes VR discomfort.
+
+For VR:
+Disable cinematic slow motion by default.
+
+⸻
+
+PERFORMANCE
+
+Target:
+
+PC:
+60 FPS minimum
+
+VR:
+72 FPS minimum target
+
+For Quest:
+
+Use:
+
+* URP
+* Occlusion Culling
+* LOD Groups
+* Object Pooling
+* Baked Lighting
+* Light Probes
+* Reflection Probes carefully
+* Minimal transparent materials
+* Reduced particles
+* Limited post-processing
+* Low realtime shadow cost
+
+⸻
+
+DEBUG SYSTEM
+
+Create an optional debug overlay.
+
+Show:
+
+Current GameState
+Round
+Distance
+Player Shot Available
+Enemy Shot Available
+Enemy State
+Enemy Reaction Time
+FPS
+
+Only show it in development builds or when enabled.
+
+⸻
+
+ERROR HANDLING
+
+All scripts must:
+
+* Check missing references
+* Log useful warnings
+* Avoid NullReferenceExceptions
+* Avoid duplicate singleton problems
+* Handle scene reload correctly
+
+⸻
+
+CODE STYLE
+
+Use:
+
+[SerializeField] private fields
+
+Properties when useful
+
+Events
+
+Interfaces where useful
+
+Clear class responsibilities
+
+Inspector tooltips
+
+Comments explaining important logic
+
+Do not over-comment obvious code.
+
+Avoid massive scripts.
+
+Avoid static global references unless genuinely necessary.
+
+⸻
+
+INITIAL GREYBOX VERSION
+
+FIRST:
+
+Build only a functional prototype.
+
+Use primitives.
+
+Required:
+
+* Staircase
+* Player
+* Enemy capsule
+* 3 duel distances
+* Countdown
+* FIRE signal
+* Raycast shooting
+* Enemy shooting
+* Health
+* Hit detection
+* Round progression
+* Win / Lose
+* Restart
+
+Do NOT add expensive graphics before this works.
+
+⸻
+
+DEVELOPMENT PHASES
+
+PHASE 1:
+Project setup
+
+PHASE 2:
+Greybox environment
+
+PHASE 3:
+Game state system
+
+PHASE 4:
+Countdown
+
+PHASE 5:
+PC weapon
+
+PHASE 6:
+Health and hit zones
+
+PHASE 7:
+AI opponent
+
+PHASE 8:
+Round progression
+
+PHASE 9:
+UI
+
+PHASE 10:
+Audio
+
+PHASE 11:
+Animations
+
+PHASE 12:
+Visual polish
+
+PHASE 13:
+VR conversion
+
+PHASE 14:
+Quest optimization
+
+PHASE 15:
+Build and testing
+
+⸻
+
+IMPORTANT CODEX INSTRUCTIONS
+
+Do not generate the entire project as one massive answer.
+
+Work incrementally.
+
+For every phase:
+
+1. Explain the objective.
+2. List the files you will create or modify.
+3. Write the full code.
+4. Tell me the exact file path.
+5. Tell me exactly which GameObject gets each script.
+6. Tell me which Inspector fields must be assigned.
+7. Tell me which Unity packages are required.
+8. Tell me how to test the feature.
+9. Tell me the expected result.
+10. Stop after that phase unless continuing is required to make the project compile.
+
+If you have access to the project files directly:
+
+Create and modify the files yourself.
+
+Do not only tell me what code to paste.
+
+Before modifying existing files:
+
+Read them first.
+
+Do not delete working code without a reason.
+
+Do not rename important existing files unless necessary.
+
+⸻
+
+COMPILATION REQUIREMENT
+
+After every major implementation:
+
+Check for:
+
+* Missing namespaces
+* Missing classes
+* Incorrect Unity API usage
+* Compile errors
+* Missing serialized references
+* Incorrect event subscriptions
+* Scene dependency problems
+
+Fix errors before moving forward.
+
+The project should always remain in a compilable state.
+
+⸻
+
+TESTING
+
+Create a basic testing checklist for every phase.
+
+For example:
+
+Countdown test:
+
+* Start duel.
+* Verify 3, 2, 1.
+* Verify DRAW appears.
+* Verify player cannot fire.
+* Verify FIRE appears.
+* Verify player can now fire.
+* Verify false start triggers before FIRE.
+
+⸻
+
+FIRST TASK
+
+Start with PHASE 1 only.
+
+Create the Unity project architecture and core foundation.
+
+For Phase 1:
+
+1. Define folder structure.
+2. Define required Unity packages.
+3. Create GameState.cs.
+4. Create GameManager.cs.
+5. Create DuelSettings.cs.
+6. Create DifficultySettings.cs.
+7. Create WeaponData.cs.
+8. Explain how to create the ScriptableObject assets.
+9. Explain how to configure Unity Input System.
+10. Explain required Build Settings for PC and future VR support.
+
+Do not start weapon gameplay or AI yet.
+
+Finish Phase 1 in a clean, compilable state.

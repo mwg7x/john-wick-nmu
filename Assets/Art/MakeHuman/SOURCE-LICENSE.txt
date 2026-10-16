@@ -1,0 +1,8 @@
+MakeHuman suited.glb and man.glb were obtained from the vsim asset library:
+https://github.com/kunalkushwaha/vsim/tree/main/packages/assets/library
+
+The upstream CREDITS.md states that these MakeHuman/MPFB 2 generated outputs
+and their source skin/clothing textures are CC0:
+https://github.com/kunalkushwaha/vsim/blob/main/packages/assets/library/CREDITS.md
+
+Downloaded 2026-10-15.

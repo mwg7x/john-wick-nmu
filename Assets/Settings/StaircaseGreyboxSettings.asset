@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04dd6da27b2296340b1895f7b8ea8e8b, type: 3}
+  m_Name: StaircaseGreyboxSettings
+  m_EditorClassIdentifier: Assembly-CSharp::LastStep.Utilities.StaircaseGreyboxSettings
+  stairWidth: 12
+  landingLength: 2.2
+  verticalFraction: 0.2
+  maximumStepRise: 0.18
+  extensionSpacing: 10
+  extensionLandings: 2
+  skylineSeed: 2406
