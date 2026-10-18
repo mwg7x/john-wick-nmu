@@ -214,7 +214,8 @@ namespace LastStep.Core
             }
             var clip = AudioClip.Create("Coin Land", samples.Length, 1, 22050, false);
             clip.SetData(samples, 0);
-            sound.clip = clip;
+            sound.clip = Resources.Load<AudioClip>("Audio/KenneyImpact/impactMetal_heavy_000") ?? clip;
+            sound.volume=.28f;
         }
         private static Texture2D CoinTexture(bool heads)
         {

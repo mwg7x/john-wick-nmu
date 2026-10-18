@@ -1,0 +1,1 @@
+512px three-light studio portraits with opaque textured skin/suits from the actual gameplay meshes. Roster identities share the existing two base meshes; no unrelated generated faces.

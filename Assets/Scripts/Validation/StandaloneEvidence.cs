@@ -36,6 +36,9 @@ namespace LastStep.Validation
         IEnumerator Start()
         {
             Application.runInBackground=true; QualitySettings.vSyncCount=0; Application.targetFrameRate=-1;
+            // Virtual test devices must keep delivering input when the evidence
+            // window is occluded; this setting is only changed in opt-in QA runs.
+            InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
             Screen.SetResolution(1920,1080,FullScreenMode.Windowed);
             folder=Path.Combine(Application.dataPath,"../Evidence",map==1?"NMU":"Staircase");Directory.CreateDirectory(folder);
             keyboard=InputSystem.AddDevice<Keyboard>("EvidenceKeyboard");
@@ -43,6 +46,9 @@ namespace LastStep.Validation
             var game=GameManager.Instance;game.SetMap(map);game.SetQuickDuel(false);game.SetDifficulty(0);game.SetPistol(0);
             UnityEngine.Random.InitState(4617);game.StartDuel();
             yield return Until(()=>!game.IsLoading&&FindAnyObjectByType<CoinTossFlow>()?.IsAwaitingSide==true);
+            yield return new WaitForSecondsRealtime(.75f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(folder,"coin-toss.png"));
+            yield return new WaitForEndOfFrame();
             var coin=FindAnyObjectByType<CoinTossFlow>();coin.ChooseSide(0);
             yield return Until(()=>coin.IsAwaitingWeapon);coin.ChooseWeapon(0);if(coin.IsAwaitingWeapon)coin.ChooseWeapon(1);
             var markers=FindAnyObjectByType<DuelPositionMarkers>();var duel=FindAnyObjectByType<DuelManager>();
@@ -50,6 +56,8 @@ namespace LastStep.Validation
             markers.EnemyStandIn.GetComponent<EnemyAI>().enabled=false;
             yield return Until(()=>duel.IsFireAllowed);
             ScreenCapture.CaptureScreenshot(Path.Combine(folder,"round1.png"));
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
             if(map==1)
             {
                 var cam=Camera.main;var follow=cam.GetComponent<ThirdPersonCamera>();
@@ -66,8 +74,13 @@ namespace LastStep.Validation
             for(int i=0;i<3;i++) {weapon.TryFire(weapon.Muzzle.position,Vector3.up);yield return new WaitForSeconds(weapon.Data.FireCooldown+.05f);}
             yield return Until(()=>duel.CurrentState==GameState.Transition);
             recording=true;StartCoroutine(CaptureFrames());
-            Keys(Key.W);
-            yield return Until(()=>duel.CurrentState!=GameState.Transition);
+            float movementDeadline=Time.realtimeSinceStartup+30;
+            while(duel.CurrentState==GameState.Transition)
+            {
+                if(Time.realtimeSinceStartup>movementDeadline)
+                {File.WriteAllText(Path.Combine(folder,"FAILED.txt"),"Checkpoint movement timed out");Application.Quit(1);yield break;}
+                Keys(Key.W);yield return null;
+            }
             Keys();
             yield return Until(()=>duel.IsFireAllowed);
             ScreenCapture.CaptureScreenshot(Path.Combine(folder,"round2.png"));

@@ -1,0 +1,8 @@
+asphalt_diff.jpg and asphalt_normal.jpg: Asphalt 02, Rob Tuytel / Poly Haven.
+https://polyhaven.com/a/asphalt_02
+https://polyhaven.com/license
+CC0. Original 1K Diffuse JPG and OpenGL normal JPG, downloaded 2026-10-17.
+
+Wetness.png, coach geometry, palms and campus dressing: original project
+geometry/material work authored in Assets/Editor/NMUCinematicSetup.cs.
+The target photograph/image is used only as visual direction and is not shipped.

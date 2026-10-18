@@ -1,0 +1,7 @@
+Result: FAIL
+Stage: 12
+Checks: 116
+System.InvalidOperationException: Headshot damage did not persist between rounds.
+  at LastStep.Editor.UpgradeValidation.Check (System.Boolean condition, System.String message) [0x00021] in D:\New Folder\jhon wik\Assets\Editor\UpgradeValidation.cs:444 
+  at LastStep.Editor.UpgradeValidation.Step () [0x0127c] in D:\New Folder\jhon wik\Assets\Editor\UpgradeValidation.cs:313 
+  at LastStep.Editor.UpgradeValidation.Tick () [0x001d1] in D:\New Folder\jhon wik\Assets\Editor\UpgradeValidation.cs:65 

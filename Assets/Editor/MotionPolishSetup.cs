@@ -34,6 +34,8 @@ namespace LastStep.Editor
             };
             if (created) AssetDatabase.AddObjectToAsset(tree, controller);
             tree.children = new[] {
+                new ChildMotion { motion=runClip, threshold=-4.8f, timeScale=-1f },
+                new ChildMotion { motion=walkClip, threshold=-2.8f, timeScale=-1.6f },
                 new ChildMotion { motion=idleClip, threshold=0f, timeScale=1f },
                 new ChildMotion { motion=walkClip, threshold=2.8f, timeScale=1.6f },
                 new ChildMotion { motion=runClip, threshold=4.8f, timeScale=1f }

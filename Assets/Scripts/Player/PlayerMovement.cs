@@ -24,6 +24,8 @@ namespace LastStep.Player
         private float lean;
         private Vector3 planarVelocity;
         private bool dodgeTime;
+        private bool sprintExhausted;
+        public Vector3 Velocity { get; private set; }
         public float Stamina => stamina;
         public float Lean => lean;
         public bool IsSprinting { get; private set; }
@@ -43,11 +45,13 @@ namespace LastStep.Player
             if (Time.time >= recoveryAt) stamina = Mathf.Min(100f, stamina + Time.deltaTime * 23f);
             bool movingToCheckpoint = duel.CurrentState == GameState.Transition;
             bool combatMove = duel.CurrentState == GameState.Fire && duel.CurrentRound > 1;
-            if (!movingToCheckpoint && !combatMove) { IsSprinting = false; planarVelocity = Vector3.zero; return; }
+            if (!movingToCheckpoint && !combatMove) { IsSprinting = false; planarVelocity = Velocity = Vector3.zero; return; }
 
             Vector2 axis = Vector2.ClampMagnitude(input.Move, 1f);
             Vector3 planar = new Vector3(axis.x, 0f, axis.y);
-            IsSprinting = input.SprintHeld && planar.sqrMagnitude > .01f && stamina > 0f;
+            if(stamina<=0f)sprintExhausted=true;
+            if(stamina>=20f || !input.SprintHeld)sprintExhausted=false;
+            IsSprinting = input.SprintHeld && axis.y>.2f && !input.IsAiming && !sprintExhausted && stamina > 0f;
             if (IsSprinting) { stamina = Mathf.Max(0f, stamina - Time.deltaTime * 18f); recoveryAt = Time.time + .8f; }
             if (input.DodgePressed && Time.time >= dodgeCooldown && stamina >= 30f)
             {
@@ -59,8 +63,12 @@ namespace LastStep.Player
                 if (health != null) health.InvulnerableUntil = Time.time + .23f;
             }
             float speed = IsSprinting ? sprintSpeed : walkSpeed;
+            if(input.IsAiming)speed*=.72f;
+            if(axis.y<0)speed*=.78f;
+            else if(Mathf.Abs(axis.x)>Mathf.Abs(axis.y))speed*=.9f;
+            bool reversing=Vector3.Dot(planarVelocity,planar)<0;
             planarVelocity = Vector3.MoveTowards(planarVelocity, planar * speed,
-                (planar.sqrMagnitude > .01f ? 24f : 32f) * Time.deltaTime);
+                (reversing?38f:planar.sqrMagnitude > .01f ? 24f : 32f) * Time.deltaTime);
             Vector3 motion = (Time.time < dodgeEnds ? dodgeDirection * 7.5f : planarVelocity) * Time.deltaTime;
             Vector3 next = transform.position + motion;
             Vector3 center = pair.Player.position;
@@ -72,8 +80,11 @@ namespace LastStep.Player
                 float max = Mathf.Max(center.z, destination.Player.position.z) + .4f;
                 next.z = Mathf.Clamp(next.z, min, max);
             }
+            Vector3 before=transform.position;
             controller.Move(new Vector3(next.x - transform.position.x, -2f * Time.deltaTime,
                 next.z - transform.position.z));
+            Velocity=Time.deltaTime>0?(transform.position-before)/Time.deltaTime:Vector3.zero;
+            Velocity=new Vector3(Velocity.x,0,Velocity.z);
         }
         private void OnEvaded(Health target)
         {

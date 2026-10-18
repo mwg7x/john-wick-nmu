@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Legendary
   m_EditorClassIdentifier: Assembly-CSharp::LastStep.AI.DifficultySettings
   difficultyName: Legendary
-  minReactionTime: 0.16
-  maxReactionTime: 0.34
-  accuracy: 0.94
-  missChance: 0.03
+  minReactionTime: 0.14
+  maxReactionTime: 0.28
+  accuracy: 0.96
+  missChance: 0.02
   criticalHitChance: 0.24
   aimSpeed: 10

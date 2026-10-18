@@ -89,16 +89,17 @@ namespace LastStep.Weapons
             texture.SetPixels(colors); texture.Apply(false, true);
             return texture;
         }
-        private void OnEnable() { if (weapon != null) { weapon.ShotFired += OnShot; weapon.FleshHit += OnFleshHit; } }
-        private void OnDisable() { if (weapon != null) { weapon.ShotFired -= OnShot; weapon.FleshHit -= OnFleshHit; } }
+        private void OnEnable() { if (weapon != null) { weapon.ShotFired += OnShot; weapon.FleshHit += OnFleshHit; weapon.SurfaceHit += OnSurfaceHit; } }
+        private void OnDisable() { if (weapon != null) { weapon.ShotFired -= OnShot; weapon.FleshHit -= OnFleshHit; weapon.SurfaceHit -= OnSurfaceHit; } }
         private void OnShot(bool hit, Vector3 point)
         {
             if (flash != null) flash.Emit(8);
             if (flashLight != null) { flashLight.intensity = 9f; StartCoroutine(FadeFlash()); }
             if (muzzle != null && tracerMaterial != null && (LastStep.Core.GameManager.Instance == null || LastStep.Core.GameManager.Instance.HighEffects))
                 StartCoroutine(Tracer(muzzle.position, point));
-            if (!hit) Burst("Stone Impact", point, Vector3.up, dustMaterial, 7, .24f, .055f, .55f);
         }
+        private void OnSurfaceHit(RaycastHit hit)
+        { Burst("Surface Impact", hit.point + hit.normal * .015f, hit.normal, dustMaterial, 7, .24f, .055f, .55f); }
         private void OnFleshHit(LastStep.Core.Health victim, Vector3 point, Vector3 direction, bool headshot)
         {
             Burst(headshot ? "Head Impact" : "Body Impact", point,

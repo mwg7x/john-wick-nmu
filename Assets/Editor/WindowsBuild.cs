@@ -26,6 +26,7 @@ namespace LastStep.Editor
                 !scenes[3].EndsWith("Duel_NMU.unity"))
                 throw new InvalidOperationException("Expected Boot, MainMenu, Duel_Staircase, Duel_NMU in build order.");
             Directory.CreateDirectory(folder);
+            NMUCinematicSetup.RepairGradeAsset();
             Directory.CreateDirectory("Logs");
             var previous = PlayerSettings.GetScriptingBackend(NamedBuildTarget.Standalone);
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, backend);

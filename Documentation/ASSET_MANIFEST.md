@@ -1,6 +1,19 @@
 # Asset manifest — 2026-10-16
 
-Status distinguishes presence/integration from production-quality validation. Existing source licenses were rechecked where linked below; no new external asset packs were imported. Original project code/art are not relicensed by this publication. Third-party files retain their own licenses.
+Status distinguishes presence/integration from production-quality validation. Original project code/art are not relicensed by this publication. Third-party files retain their own licenses. The October 17 additions are listed below.
+
+## Cinematic campus additions — 2026-10-17
+
+| Asset | Source / terms | Integration |
+| --- | --- | --- |
+| Asphalt 02 diffuse and normal, 1K | [Rob Tuytel / Poly Haven](https://polyhaven.com/a/asphalt_02), CC0 | Tiled road with original smoothness/wetness mask and campus reflection probe |
+| NMU university coach | Original editable geometry in `NMUCinematicSetup.cs` | Reusable prefab, three parked left, wheels/hubs, glass, seats, mirrors, lights, signage and a single collision hull |
+| Palms, lamps, paving, bollards, gate lighting and controls | Original generator geometry/materials | Static campus dressing outside the central duel corridor |
+| `Audio/Tabasco/Pistol.wav` | [Tabasco / Vincent Sevedge](https://opengameart.org/content/gunshot-sounds) | Single report extracted from CZ recording; normalized, mono, boundary fades. Archive says CC-BY-3.0 despite OGA CC0 label; attribution and CC-BY link retained in adjacent license file |
+| `Audio/HaelDB/grunt1–3.wav` | [HaelDB](https://opengameart.org/content/male-gruntyelling-sounds), CC0 option | Actual player-hit vocals, separate source and 1.2s cooldown |
+| 512px roster portraits | Renders from existing gameplay meshes, inherited model terms | Three studio lights, same roster assignment; source transparency corrected. Existing roster still shares two base meshes |
+
+The target image remains local reference material; it is not a shipped background or game asset. Backward locomotion uses reversed existing walk/run clips; lateral travel rotates the lower-body stride with torso counter-rotation. These are improvements to the existing generic rig, not a new authored tactical mocap library.
 
 | Scope / local path | Source and terms | Use / dependencies | Status and gaps |
 | --- | --- | --- | --- |

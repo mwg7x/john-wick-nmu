@@ -1,0 +1,6 @@
+Unity: 6000.6.5f1
+Backend: Mono2x
+Result: Succeeded
+Errors: 0
+Warnings: 502
+Output: D:\New Folder\jhon wik\Builds\WindowsMono\LAST STEP.exe

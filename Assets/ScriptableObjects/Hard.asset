@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Hard
   m_EditorClassIdentifier:
   difficultyName: Hard
-  minReactionTime: 0.35
-  maxReactionTime: 0.7
-  accuracy: 0.8
-  missChance: 0.1
+  minReactionTime: 0.28
+  maxReactionTime: 0.52
+  accuracy: 0.87
+  missChance: 0.06
   criticalHitChance: 0.15
   aimSpeed: 6

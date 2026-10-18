@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Normal
   m_EditorClassIdentifier:
   difficultyName: Normal
-  minReactionTime: 0.6
-  maxReactionTime: 1
-  accuracy: 0.65
-  missChance: 0.2
+  minReactionTime: 0.48
+  maxReactionTime: 0.82
+  accuracy: 0.73
+  missChance: 0.15
   criticalHitChance: 0.1
   aimSpeed: 4

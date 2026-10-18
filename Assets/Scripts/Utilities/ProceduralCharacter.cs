@@ -65,16 +65,29 @@ namespace LastStep.Utilities
                     var source = renderer.sharedMaterial;
                     if (source == null) continue;
                     bool clothing = renderer.name.Contains("casualsuit");
-                    var material = new Material(clothing ? (Shader.Find("Universal Render Pipeline/Lit") ?? source.shader) : source.shader);
+                    // Preserve texture detail while correcting the source's transparency.
+                    var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    // These GLBs mark solid skin/suits as double-sided BLEND. Convert
+                    // to depth-writing opaque Lit to avoid transparent triangle sorting.
+                    var baseTexture=source.HasProperty("baseColorTexture")?source.GetTexture("baseColorTexture"):source.mainTexture;
+                    material.SetTexture("_BaseMap",baseTexture);
+                    if(source.HasProperty("baseColorTexture"))
+                    {material.SetTextureScale("_BaseMap",source.GetTextureScale("baseColorTexture"));material.SetTextureOffset("_BaseMap",source.GetTextureOffset("baseColorTexture"));}
+                    var normalTexture=source.HasProperty("normalTexture")?source.GetTexture("normalTexture"):null;
+                    if(normalTexture!=null){material.SetTexture("_BumpMap",normalTexture);material.SetTextureScale("_BumpMap",source.GetTextureScale("normalTexture"));material.SetTextureOffset("_BumpMap",source.GetTextureOffset("normalTexture"));material.SetFloat("_BumpScale",.55f);material.EnableKeyword("_NORMALMAP");}
+                    material.SetFloat("_Smoothness",clothing ? .22f : .3f);
                     Color tint = clothing ? (protagonist ? new Color(.58f,.60f,.67f) :
                         new Color(Mathf.Clamp01(entry.Suit.r*2.5f),Mathf.Clamp01(entry.Suit.g*2.5f),Mathf.Clamp01(entry.Suit.b*2.5f))) :
                         renderer.name == "Human" ? new Color(Mathf.Clamp01(entry.Skin.r*1.8f),
                             Mathf.Clamp01(entry.Skin.g*1.8f),Mathf.Clamp01(entry.Skin.b*1.8f)) :
                         new Color(.20f,.22f,.26f);
-                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", clothing ? new Color(.025f,.028f,.037f) : tint);
-                    if (clothing && material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .16f);
+                    if (clothing) tint = new Color(.22f,.24f,.28f);
+                    else if (renderer.name == "Human") tint = Color.Lerp(Color.white, tint, .25f);
+                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", tint);
                     else if (material.HasProperty("baseColorFactor")) material.SetColor("baseColorFactor", tint);
                     else material.color = tint;
+                    if (clothing && material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .22f);
+                    if (clothing && material.HasProperty("roughnessFactor")) material.SetFloat("roughnessFactor", .78f);
                     renderer.material = material;
                     materials.Add(material);
                 }

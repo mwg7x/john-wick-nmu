@@ -9,6 +9,9 @@ namespace LastStep.Utilities
     {
         private Transform actor, opponent, pistol, muzzle, rightHand, leftHand;
         private Transform upperRight, lowerRight, upperLeft, lowerLeft;
+        private Transform pelvis, spine;
+        private float strideYaw;
+        private bool backwards;
         private Animator animator;
         private Health health;
         private WeaponController weapon;
@@ -50,6 +53,8 @@ namespace LastStep.Utilities
                     case "lowerarm_r": lowerRight = bone; break;
                     case "upperarm_l": upperLeft = bone; break;
                     case "lowerarm_l": lowerLeft = bone; break;
+                    case "pelvis": pelvis = bone; break;
+                    case "spine_01": spine = bone; break;
                 }
             }
             if (weapon != null) weapon.ShotFired += OnShot;
@@ -78,8 +83,13 @@ namespace LastStep.Utilities
             float rawSpeed = displacement.magnitude / Mathf.Max(Time.deltaTime, .001f);
             if (rawSpeed > 9f) rawSpeed = 0f; // checkpoint placement is not locomotion
             lastPosition = actor.position;
-            speed = Mathf.MoveTowards(speed, rawSpeed, Time.deltaTime * 9f);
-            animator.SetFloat("Speed", Mathf.Min(speed, 4.8f));
+            speed = Mathf.MoveTowards(speed, rawSpeed, Time.deltaTime * 24f);
+            var localMotion=actor.InverseTransformDirection(displacement);
+            if(rawSpeed>.15f) backwards=localMotion.z<-.001f;
+            float yaw=rawSpeed>.15f?Mathf.Atan2(localMotion.x,Mathf.Abs(localMotion.z))*Mathf.Rad2Deg:0;
+            if(backwards)yaw=-yaw;
+            strideYaw=Mathf.MoveTowardsAngle(strideYaw,Mathf.Clamp(yaw,-65,65),Time.deltaTime*360);
+            animator.SetFloat("Speed", Mathf.Min(speed, 4.8f)*(backwards?-1:1));
             ready = health != null && health.IsAlive;
             // Maintain a guarded pistol pose while walking instead of letting
             // the run clip swing the weapon arm behind the character.
@@ -112,14 +122,22 @@ namespace LastStep.Utilities
             // to its animated arm bones while leaving the walking clip in control.
             if (animator != null && !animator.isHuman && aimWeight > .01f)
             {
+                if(pelvis!=null && spine!=null)
+                {
+                    // Turn the stride toward lateral travel, counter-rotate the torso to
+                    // retain the aim direction. Backward travel plays the walk cycle in reverse.
+                    var upperRotation=spine.rotation;
+                    pelvis.rotation=Quaternion.AngleAxis(strideYaw,actor.up)*pelvis.rotation;
+                    spine.rotation=upperRotation;
+                }
                 Vector3 elbow = actor.position + actor.up * 1.24f + forward * .13f + right * .27f;
                 Vector3 grip = actor.position + actor.up * 1.23f + forward * .36f + right * .19f;
-                AimArm(upperRight, lowerRight, rightHand, elbow, grip, aimWeight * .82f);
+                AimArm(upperRight, lowerRight, rightHand, elbow, grip, aimWeight);
                 if (leftHand != null)
                 {
                     Vector3 leftElbow = actor.position + actor.up * 1.13f + forward * .07f - right * .25f;
-                    Vector3 support = grip - right * .14f - actor.up * .06f;
-                    AimArm(upperLeft, lowerLeft, leftHand, leftElbow, support, aimWeight * .55f);
+                    Vector3 support = rightHand.position - right * .055f - actor.up * .025f + forward * .025f;
+                    AimArm(upperLeft, lowerLeft, leftHand, leftElbow, support, aimWeight * .95f);
                 }
             }
             pistol.position = rightHand.position + forward * .045f + actor.up * .012f;
@@ -155,6 +173,17 @@ namespace LastStep.Utilities
             Vector3 elbow, Vector3 grip, float weight)
         {
             if (upper == null || lower == null || palm == null) return;
+            // Two-bone geometry reaches the grip without stretching the arm. The
+            // supplied elbow is a bend hint, not an independently forced joint target.
+            Vector3 reach=grip-upper.position;
+            float a=Vector3.Distance(upper.position,lower.position), b=Vector3.Distance(lower.position,palm.position);
+            float d=Mathf.Clamp(reach.magnitude,Mathf.Abs(a-b)+.001f,a+b-.001f);
+            if(a<.001f || b<.001f || reach.sqrMagnitude<.0001f)return;
+            Vector3 axis=reach.normalized;
+            Vector3 bend=Vector3.ProjectOnPlane(elbow-upper.position,axis).normalized;
+            if(bend.sqrMagnitude<.01f)bend=Vector3.Cross(axis,Vector3.up).normalized;
+            float along=(a*a+d*d-b*b)/(2*d);
+            elbow=upper.position+axis*along+bend*Mathf.Sqrt(Mathf.Max(0,a*a-along*along));
             Vector3 current = lower.position - upper.position;
             Vector3 target = elbow - upper.position;
             if (current.sqrMagnitude > .0001f && target.sqrMagnitude > .0001f)

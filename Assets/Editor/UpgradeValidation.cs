@@ -123,9 +123,13 @@ namespace LastStep.Editor
                     Resources.Load<AudioClip>("Audio/SRG774/urgent") != null,
                     "Adaptive music component or licensed tracks missing.");
                 int originalTier = game.DifficultyIndex;
+                float previousReaction=float.PositiveInfinity, previousAccuracy=0;
                 for (int i = 0; i < 4; i++)
                 {
                     game.SetDifficulty(i);
+                    Check(game.SelectedDifficulty.MaxReactionTime<previousReaction && game.SelectedDifficulty.Accuracy>previousAccuracy,
+                        "Difficulty tiers must increase reaction speed and accuracy.");
+                    previousReaction=game.SelectedDifficulty.MaxReactionTime;previousAccuracy=game.SelectedDifficulty.Accuracy;
                     Check(game.SelectedDifficulty != null && LastStep.AI.OpponentRoster.Count(i) > 0 &&
                         !string.IsNullOrEmpty(LastStep.AI.OpponentRoster.Get(i, 0).Name), "Difficulty tier missing.");
                 }
@@ -206,6 +210,10 @@ namespace LastStep.Editor
             }
             if (stage == 9 && duel.CurrentState == GameState.Countdown)
             {
+                // This phase validates deterministic damage/ammo, not AI reaction timing.
+                // Disable before FIRE: a long render frame can let faster AI shoot
+                // before the editor's next validation tick.
+                markers.EnemyStandIn.GetComponent<LastStep.AI.EnemyAI>().enabled=false;
                 Check(player.Maximum == 500 && enemy.Maximum == 500, "500 HP encounter setup failed.");
                 Check(Mathf.Abs(duel.CurrentDistance - 50f) < .01f, "Round 1 is not 50m.");
                 Check(Mathf.Abs(Vector3.Distance(player.transform.position, enemy.transform.position) - 50f) < .2f,
@@ -216,7 +224,7 @@ namespace LastStep.Editor
                     !weapon.TryReload(), "Three-shot round budget or no-reload rule failed.");
                 var ammoText = UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>()?.transform.Find("AmmoLabel")?.GetComponent<TMPro.TMP_Text>();
                 var roundText = UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>()?.transform.Find("RoundLabel")?.GetComponent<TMPro.TMP_Text>();
-                Check(ammoText != null && ammoText.text.Contains("AMMO 3/3") && ammoText.text.Contains("▮▮▮") &&
+                Check(ammoText != null && ammoText.text.Contains("AMMO 3/3") && UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>().VisibleAmmoSlots == 3 &&
                     roundText != null && roundText.text.Contains("50M"), "Round 1 HUD did not show three shots.");
                 Check(weapon.Data.GetDamage(HitZone.Head) == weapon.Data.GetDamage(HitZone.Chest) * 2,
                     "Headshot multiplier wrong.");
@@ -244,11 +252,19 @@ namespace LastStep.Editor
                 var enemyMuzzle = markers.EnemyStandIn.Find("Muzzle");
                 Check(enemyGun != null && chest != null && enemyMuzzle != null, "Enemy attack rig missing.");
                 int playerBefore = player.Current;
-                SessionState.SetInt(Prefix + "enemyDamage", enemyGun.Data.GetDamage(HitZone.Chest));
                 Check(enemyGun.TryFire(enemyMuzzle.position, (chest.position - enemyMuzzle.position).normalized),
                     "Enemy could not fire during DRAW.");
                 Check(player.Current < playerBefore, "Enemy bullet did not reduce player health.");
+                // The guarded hand can legitimately occlude the chest ray. Preserve
+                // the actual injury rather than assuming which hurt volume was first.
+                SessionState.SetInt(Prefix+"enemyDamage",playerBefore-player.Current);
                 Check(motion.HitImpulse > .5f, "Character hit reaction did not trigger.");
+                var audio=UnityEngine.Object.FindAnyObjectByType<LastStep.Audio.AudioManager>();
+                Check(Resources.Load<AudioClip>("Audio/Tabasco/Pistol")?.samples>1000 &&
+                    Resources.Load<AudioClip>("Audio/HaelDB/grunt1")?.samples>1000,"Recorded combat audio missing.");
+                bool audioPlaying=false;
+                if(audio!=null)foreach(var source in audio.GetComponents<AudioSource>())audioPlaying|=source.isPlaying;
+                Check(audioPlaying,"Combat audio sources are silent after accepted shots.");
                 Check(UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DamageVision>() != null,
                     "Player damage vision missing.");
                 for (int remaining = 1; remaining >= 0; remaining--)
@@ -276,7 +292,7 @@ namespace LastStep.Editor
                 if (stage == 11)
                 {
                     var ammoText = UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>()?.transform.Find("AmmoLabel")?.GetComponent<TMPro.TMP_Text>();
-                    Check(ammoText != null && ammoText.text.Contains("AMMO 0/3") && ammoText.text.Contains("▯▯▯"),
+                    Check(ammoText != null && ammoText.text.Contains("AMMO 0/3") && UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>().VisibleAmmoSlots == 0,
                         "Empty round 1 HUD disagreed with authoritative ammo.");
                 }
                 int nextIndex = stage == 11 ? 1 : 2;
@@ -302,7 +318,8 @@ namespace LastStep.Editor
                 Check(duel.CurrentRound == 2 && duel.CurrentDistance == 30f, "30m round did not begin.");
                 Check(player.Current == 500 - SessionState.GetInt(Prefix + "enemyDamage", -1) &&
                     enemy.Current == 500 - 3 * weapon.Data.GetDamage(HitZone.Head),
-                    "Headshot damage did not persist between rounds.");
+                    "Headshot damage did not persist between rounds: player="+player.Current+" enemy="+enemy.Current+
+                    " enemyDamage="+SessionState.GetInt(Prefix+"enemyDamage",-1)+" headDamage="+weapon.Data.GetDamage(HitZone.Head));
                 Check(weapon.Ammunition == 3 && markers.EnemyStandIn.GetComponent<WeaponController>().Ammunition == 3,
                     "Round 2 did not restore exactly three shots.");
                 var ammoText = UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>()?.transform.Find("AmmoLabel")?.GetComponent<TMPro.TMP_Text>();
@@ -312,6 +329,26 @@ namespace LastStep.Editor
                 Check(!duel.TryPrepareRound(2, 1) && weapon.Ammunition == 3,
                     "Duplicate round preparation reset ammo.");
                 var hud = UnityEngine.Object.FindAnyObjectByType<LastStep.UI.DuelHUD>();
+                var enemyFill=hud.transform.Find("EnemyHealthBar/Fill")?.GetComponent<UnityEngine.UI.Image>();
+                var playerNumber=hud.transform.Find("PlayerHealthLabel")?.GetComponent<TMPro.TMP_Text>();
+                var enemyNumber=hud.transform.Find("EnemyHealthLabel")?.GetComponent<TMPro.TMP_Text>();
+                Check(enemyFill!=null && Mathf.Abs(enemyFill.fillAmount-(float)enemy.Current/enemy.Maximum)<.001f,
+                    "Enemy health bar did not track real shot damage.");
+                Check(playerNumber!=null && playerNumber.text.Contains(player.Current+"/"+player.Maximum) &&
+                    enemyNumber!=null && enemyNumber.text.Contains(enemy.Current+"/"+enemy.Maximum),
+                    "Top health numbers did not match both health bars.");
+                foreach(var portraitName in new[]{"PlayerPortrait","OpponentPortrait"})
+                    Check(hud.transform.Find(portraitName)?.GetComponent<UnityEngine.UI.Image>()?.sprite?.texture.width>=512,
+                        "Studio portrait missing: "+portraitName);
+                if(SceneManager.GetActiveScene().name=="Duel_NMU")
+                {
+                    var transport=GameObject.Find("WestTransportCourt");
+                    Check(transport!=null && transport.transform.childCount==3,"Expected three NMU buses.");
+                    foreach(var bus in transport.GetComponentsInChildren<Collider>())
+                        Check(bus.bounds.max.x < -10,"Bus intrudes into duel lane.");
+                    Check(!Physics.Linecast(new Vector3(0,1,-25),new Vector3(0,1,25),out var laneHit) ||
+                        laneHit.collider.GetComponentInParent<Health>()!=null,"Environment blocks 50m aiming lane.");
+                }
                 var fill = hud != null ? hud.transform.Find("PlayerHealthBar/Fill")?.GetComponent<UnityEngine.UI.Image>() : null;
                 Check(fill != null && fill.type == UnityEngine.UI.Image.Type.Filled &&
                     Mathf.Abs(fill.fillAmount - (float)player.Current / player.Maximum) < .001f,
@@ -358,7 +395,16 @@ namespace LastStep.Editor
                 Check(player.IsAlive && !enemy.IsAlive && SessionState.GetBool(Prefix + "finisherSeen", false) &&
                     Mathf.Approximately(Time.timeScale, 1f),
                     "Lethal bullet did not enter Finisher and award victory.");
-                Next(18); game.ReturnToMainMenu(); return;
+                SessionState.SetInt(Prefix+"nextOpponent",game.OpponentIndex+1);
+                Next(17);Check(game.AdvanceOpponent(),"Next opponent action failed.");return;
+            }
+            if(stage==17 && !game.IsLoading && duel.CurrentState==GameState.Intro)
+            {
+                Check(game.OpponentIndex==SessionState.GetInt(Prefix+"nextOpponent",-1),"Opponent index did not advance.");
+                Check(SceneManager.GetActiveScene().name==game.SelectedDuelScene,"Next opponent changed selected map.");
+                Check(UnityEngine.Object.FindObjectsByType<DuelManager>(FindObjectsSortMode.None).Length==1,"Duplicate duel managers after next opponent.");
+                Check(player.Current==player.Maximum && enemy.Current==enemy.Maximum,"Next encounter did not restore health.");
+                Next(18);game.ReturnToMainMenu();return;
             }
             if (stage == 18 && SceneManager.GetActiveScene().name == "MainMenu") Finish("");
         }

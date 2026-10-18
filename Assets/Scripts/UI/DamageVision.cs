@@ -23,6 +23,9 @@ namespace LastStep.UI
         private Texture2D indicatorTexture;
         private WeaponController enemyWeapon;
         private float directionalPulse;
+        private Volume injuryVolume;
+        private VolumeProfile injuryProfile;
+        private float baseSaturation, baseExposure;
 
         public void Initialize(Health source)
         {
@@ -32,14 +35,16 @@ namespace LastStep.UI
             previousHealth = player != null ? player.Current : 0;
             if (player != null) player.Changed += OnHealthChanged;
             if (overlay == null) CreateOverlay();
-            var volume = FindAnyObjectByType<Volume>();
-            if (volume != null)
+            float highest=float.NegativeInfinity;
+            foreach(var volume in FindObjectsByType<Volume>(FindObjectsSortMode.None))
             {
-                var profile = volume.profile;
-                if (!profile.TryGet(out colorAdjustments)) colorAdjustments = profile.Add<ColorAdjustments>(true);
-                colorAdjustments.saturation.overrideState = true;
-                colorAdjustments.postExposure.overrideState = true;
+                if(volume.isGlobal && volume.priority>highest && volume.sharedProfile!=null && volume.sharedProfile.TryGet<ColorAdjustments>(out var grade))
+                {highest=volume.priority;baseSaturation=grade.saturation.value;baseExposure=grade.postExposure.value;}
             }
+            injuryVolume=gameObject.AddComponent<Volume>();injuryVolume.isGlobal=true;injuryVolume.priority=100;
+            injuryProfile=ScriptableObject.CreateInstance<VolumeProfile>();injuryVolume.sharedProfile=injuryProfile;
+            colorAdjustments=injuryProfile.Add<ColorAdjustments>();
+            colorAdjustments.saturation.overrideState=true;colorAdjustments.postExposure.overrideState=true;
             foreach (var weapon in FindObjectsByType<WeaponController>(FindObjectsSortMode.None))
                 if (weapon.GetComponent<Health>() != player) { enemyWeapon = weapon; break; }
             if (enemyWeapon != null) enemyWeapon.FleshHit += OnFleshHit;
@@ -133,8 +138,8 @@ namespace LastStep.UI
             if (directionIndicator != null) directionIndicator.color = new Color(1f, 1f, 1f, directionalPulse);
             if (colorAdjustments != null)
             {
-                colorAdjustments.saturation.value = -100f * Mathf.Clamp01(lost * .5f + pulse) * maximumDesaturation;
-                colorAdjustments.postExposure.value = -Mathf.Clamp01(lost * .4f + pulse) * injuryExposure * 2f;
+                colorAdjustments.saturation.value = baseSaturation - 100f * Mathf.Clamp01(lost * .5f + pulse) * maximumDesaturation;
+                colorAdjustments.postExposure.value = baseExposure - Mathf.Clamp01(lost * .4f + pulse) * injuryExposure * 2f;
             }
         }
 
@@ -144,6 +149,7 @@ namespace LastStep.UI
             if (enemyWeapon != null) enemyWeapon.FleshHit -= OnFleshHit;
             if (texture != null) Destroy(texture);
             if (indicatorTexture != null) Destroy(indicatorTexture);
+            if(injuryProfile!=null)Destroy(injuryProfile);
         }
     }
 }

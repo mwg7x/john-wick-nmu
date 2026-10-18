@@ -37,9 +37,12 @@ namespace LastStep.UI
         private LastStep.Weapons.WeaponController gun;
         private DamageVision damageVision;
         private Sprite playerSprite, opponentSprite;
+        private readonly Image[] ammoSlots = new Image[DuelManager.ShotsPerRound];
+        public int VisibleAmmoSlots { get; private set; }
 
         private void Start()
         {
+            PolishLayout();
             if (player == null || enemy == null)
             {
                 var markers = FindAnyObjectByType<DuelPositionMarkers>();
@@ -123,10 +126,46 @@ namespace LastStep.UI
             {
                 int ammo = gun.Ammunition;
                 if (roundLabel != null) roundLabel.text = $"ROUND <color=#d91f34>{duel.CurrentRound}/3</color>  |  {duel.CurrentDistance:0}M";
-                ammoLabel.text = new string('▮', ammo) + new string('▯', DuelManager.ShotsPerRound - ammo) +
-                    $"   AMMO {ammo}/{DuelManager.ShotsPerRound}";
+                ammoLabel.text = $"AMMO {ammo}/{DuelManager.ShotsPerRound}";
+                VisibleAmmoSlots = Mathf.Clamp(ammo,0,DuelManager.ShotsPerRound);
+                for(int i=0;i<ammoSlots.Length;i++) if(ammoSlots[i]!=null)
+                    ammoSlots[i].color=i<VisibleAmmoSlots?new Color(.86f,.77f,.53f):new Color(.24f,.28f,.33f);
             }
             if (notice != null && Time.unscaledTime >= noticeUntil) notice.text = "";
+        }
+        private void PolishLayout()
+        {
+            // Same HUD regions, anchored to canvas edges so title, portraits and bars never collide.
+            Place(playerHealthLabel,new Vector2(0,1),new Vector2(140,-42),new Vector2(460,35),TextAlignmentOptions.Left,22);
+            Place(enemyHealthLabel,new Vector2(1,1),new Vector2(-140,-42),new Vector2(460,35),TextAlignmentOptions.Right,22);
+            if(playerHealthLabel!=null)playerHealthLabel.rectTransform.pivot=new Vector2(0,.5f);
+            if(enemyHealthLabel!=null)enemyHealthLabel.rectTransform.pivot=new Vector2(1,.5f);
+            HealthBar(playerBar,new Vector2(0,1),new Vector2(140,-74),0);
+            HealthBar(enemyBar,new Vector2(1,1),new Vector2(-140,-74),1);
+            Place(centerBrand,new Vector2(.5f,1),new Vector2(0,-44),new Vector2(580,52),TextAlignmentOptions.Center,38);
+            Place(status,new Vector2(.5f,1),new Vector2(0,-147),new Vector2(1000,42),TextAlignmentOptions.Center,19);
+            Place(ammoLabel,new Vector2(1,0),new Vector2(-235,76),new Vector2(210,40),TextAlignmentOptions.Right,23);
+            Place(roundLabel,new Vector2(1,0),new Vector2(-260,118),new Vector2(300,35),TextAlignmentOptions.Right,20);
+            for(int i=0;i<ammoSlots.Length;i++)
+            {
+                var go=new GameObject("AmmoSlot_"+i,typeof(RectTransform),typeof(Image));go.transform.SetParent(transform,false);
+                var slot=go.GetComponent<Image>();slot.raycastTarget=false;ammoSlots[i]=slot;
+                Bar(slot,new Vector2(1,0),new Vector2(-430+i*20,76),new Vector2(10,23),.5f);
+            }
+            foreach(var portrait in new[]{playerPortrait,opponentPortrait}) if(portrait!=null)
+            {portrait.preserveAspect=true;portrait.raycastTarget=false;var outline=portrait.GetComponent<Outline>()??portrait.gameObject.AddComponent<Outline>();outline.effectColor=new Color(.45f,.53f,.61f,.8f);outline.effectDistance=new Vector2(1,-1);}
+        }
+        private static void Place(TMP_Text text,Vector2 anchor,Vector2 position,Vector2 size,TextAlignmentOptions alignment,int fontSize)
+        {if(text==null)return;var r=text.rectTransform;r.anchorMin=r.anchorMax=anchor;r.anchoredPosition=position;r.sizeDelta=size;text.alignment=alignment;text.fontSize=fontSize;text.raycastTarget=false;}
+        private static void Bar(Image image,Vector2 anchor,Vector2 position,Vector2 size,float pivot)
+        {if(image==null)return;var r=image.rectTransform;r.anchorMin=r.anchorMax=anchor;r.pivot=new Vector2(pivot,.5f);r.anchoredPosition=position;r.sizeDelta=size;image.raycastTarget=false;}
+        private static void HealthBar(Image image,Vector2 anchor,Vector2 position,float pivot)
+        {
+            if(image==null)return;
+            var r=image.transform.parent as RectTransform;
+            if(r==null)return;
+            r.anchorMin=r.anchorMax=anchor;r.pivot=new Vector2(pivot,.5f);r.anchoredPosition=position;r.sizeDelta=new Vector2(460,7);
+            var fill=image.rectTransform;fill.anchorMin=Vector2.zero;fill.anchorMax=Vector2.one;fill.offsetMin=fill.offsetMax=Vector2.zero;
         }
         private void OnFalseStart(int count, bool lost)
         {

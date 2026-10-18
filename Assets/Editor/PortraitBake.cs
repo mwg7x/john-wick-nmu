@@ -14,8 +14,8 @@ namespace LastStep.Editor
         public static void Ensure()
         {
             var first=AssetDatabase.LoadAssetAtPath<Texture2D>(Folder+"/Ahmed_Allam.png");
-            if(first!=null && first.width>=256 &&
-                File.Exists(Folder+"/framed-v4.txt") &&
+            if(first!=null && first.width>=512 &&
+                File.Exists(Folder+"/studio-v7.txt") &&
                 File.Exists(Folder+"/Protagonist.png")) return;
             var root=new GameObject("PortraitBakeTemporary");
             root.transform.position=new Vector3(1000,1000,1000);
@@ -32,9 +32,17 @@ namespace LastStep.Editor
             lightGo.transform.LookAt(root.transform.position+Vector3.up*1.5f);
             var light=lightGo.GetComponent<Light>();
             light.type=LightType.Spot;light.spotAngle=70;light.range=7;
-            light.intensity=9;light.color=new Color(.94f,.90f,.84f);
+            light.intensity=2.4f;light.color=new Color(1f,.91f,.83f);
             light.cullingMask=1<<2;
-            var rt=new RenderTexture(256,256,24);
+            var fillGo=new GameObject("PortraitFill",typeof(Light));
+            fillGo.transform.position=root.transform.position+new Vector3(-1.2f,1.8f,1);
+            fillGo.transform.LookAt(root.transform.position+Vector3.up*1.6f);
+            var fill=fillGo.GetComponent<Light>();fill.type=LightType.Spot;fill.spotAngle=80;fill.range=6;fill.intensity=.65f;fill.color=new Color(.48f,.67f,1);fill.cullingMask=1<<2;
+            var rimGo=new GameObject("PortraitRim",typeof(Light));
+            rimGo.transform.position=root.transform.position+new Vector3(.5f,2.3f,-.7f);
+            rimGo.transform.LookAt(root.transform.position+Vector3.up*1.6f);
+            var rim=rimGo.GetComponent<Light>();rim.type=LightType.Spot;rim.spotAngle=90;rim.range=6;rim.intensity=3;rim.color=new Color(.55f,.72f,1);rim.cullingMask=1<<2;
+            var rt=new RenderTexture(512,512,24);
             camera.targetTexture=rt;
             var previous=RenderTexture.active;
             try
@@ -55,9 +63,9 @@ namespace LastStep.Editor
                         {
                             Bounds bounds=visible[0].bounds;
                             foreach(var renderer in visible) bounds.Encapsulate(renderer.bounds);
-                            float eyeLevel=bounds.min.y+bounds.size.y*.86f;
+                            float eyeLevel=bounds.min.y+bounds.size.y*.88f;
                             var focus=new Vector3(bounds.center.x,eyeLevel,bounds.center.z);
-                            cameraGo.transform.position=focus+new Vector3(0,.025f,.76f);
+                            cameraGo.transform.position=focus+new Vector3(.09f,.025f,.69f);
                             cameraGo.transform.LookAt(focus);
                         }
                         var animator=actor.GetComponentInChildren<Animator>();
@@ -79,8 +87,8 @@ namespace LastStep.Editor
                         foreach (var part in actor.GetComponentsInChildren<Transform>(true)) part.gameObject.layer=2;
                         camera.Render();
                         RenderTexture.active=rt;
-                        var image=new Texture2D(256,256,TextureFormat.RGB24,false);
-                        image.ReadPixels(new Rect(0,0,256,256),0,0);
+                        var image=new Texture2D(512,512,TextureFormat.RGB24,false);
+                        image.ReadPixels(new Rect(0,0,512,512),0,0);
                         image.Apply();
                         string path=Folder+"/"+entry.Name.Replace(' ','_')+".png";
                         File.WriteAllBytes(path,image.EncodeToPNG());
@@ -88,7 +96,7 @@ namespace LastStep.Editor
                         UnityEngine.Object.DestroyImmediate(actor);
                         AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceUpdate);
                     }
-                File.WriteAllText(Folder+"/framed-v4.txt","Tight portraits with lowered arms from the same imported character meshes as gameplay.");
+                File.WriteAllText(Folder+"/studio-v7.txt","512px three-light studio portraits with opaque textured skin/suits from the actual gameplay meshes. Roster identities share the existing two base meshes; no unrelated generated faces.");
             }
             finally
             {
@@ -99,6 +107,8 @@ namespace LastStep.Editor
                 UnityEngine.Object.DestroyImmediate(root);
                 UnityEngine.Object.DestroyImmediate(cameraGo);
                 UnityEngine.Object.DestroyImmediate(lightGo);
+                UnityEngine.Object.DestroyImmediate(fillGo);
+                UnityEngine.Object.DestroyImmediate(rimGo);
             }
         }
     }

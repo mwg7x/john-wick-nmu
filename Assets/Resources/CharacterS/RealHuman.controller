@@ -31,6 +31,22 @@ BlendTree:
   m_Name: Grounded Locomotion
   m_Childs:
   - serializedVersion: 2
+    m_Motion: {fileID: 8291298685565124274, guid: 9dd08a2beabf3424bbe9afca83d73bfd, type: 3}
+    m_Threshold: -4.8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: -1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: 
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -4832708865683171987, guid: 9dd08a2beabf3424bbe9afca83d73bfd, type: 3}
+    m_Threshold: -2.8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: -1.6
+    m_CycleOffset: 0
+    m_DirectBlendParameter: 
+    m_Mirror: 0
+  - serializedVersion: 2
     m_Motion: {fileID: -2474113961476506421, guid: 9dd08a2beabf3424bbe9afca83d73bfd, type: 3}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}

@@ -24,6 +24,9 @@ namespace LastStep.Audio
         private Transform playerActor;
         private Vector3 lastPlayerPosition;
         private float nextStepTime;
+        private AudioSource footSource, voiceSource;
+        private AudioClip[] pain;
+        private float nextPain;
 
         private void Awake()
         {
@@ -33,7 +36,10 @@ namespace LastStep.Audio
             warning = Tone("False Start", 180, 0.46f, 0.28f);
             victory = Tone("Victory", 680, 0.95f, 0.23f);
             defeat = Tone("Defeat", 190, 0.95f, 0.22f);
-            gunshot = ActionShot();
+            gunshot = Resources.Load<AudioClip>("Audio/Tabasco/Pistol") ?? ActionShot();
+            pain=new[]{Resources.Load<AudioClip>("Audio/HaelDB/grunt1"),Resources.Load<AudioClip>("Audio/HaelDB/grunt2"),Resources.Load<AudioClip>("Audio/HaelDB/grunt3")};
+            footSource=gameObject.AddComponent<AudioSource>();footSource.playOnAwake=false;
+            voiceSource=gameObject.AddComponent<AudioSource>();voiceSource.playOnAwake=false;
             hit = ImpactThud();
             footstep = Footstep();
             stoneSteps = LoadClips("footstep_concrete", 3);
@@ -95,13 +101,15 @@ namespace LastStep.Audio
             if (playerSource != null) playerSource.volume = volume;
             if (enemySource != null) enemySource.volume = volume;
             if (ambienceSource != null) ambienceSource.volume = volume * 0.45f;
+            footSource.volume=volume;voiceSource.volume=volume;
             if (playerActor != null && playerSource != null)
             {
                 float motion = Vector3.Distance(playerActor.position, lastPlayerPosition) / Mathf.Max(Time.deltaTime, .001f);
                 lastPlayerPosition = playerActor.position;
-                if (motion > .8f && Time.time >= nextStepTime)
+                if (motion > .8f && motion < 9f && Time.timeScale>0 && Time.time >= nextStepTime)
                 {
-                    playerSource.PlayOneShot(Pick(stoneSteps, footstep), Mathf.Clamp01(motion / 5f) * .34f);
+                    footSource.pitch=Random.Range(.96f,1.04f);
+                    footSource.PlayOneShot(Pick(stoneSteps, footstep), Mathf.Clamp01(motion / 5f) * .45f);
                     nextStepTime = Time.time + Mathf.Lerp(.5f, .32f, Mathf.Clamp01(motion / 5f));
                 }
             }
@@ -141,6 +149,11 @@ namespace LastStep.Audio
         {
             var source = playerWeapon != null && target == playerWeapon.GetComponent<Health>() ? playerSource : enemySource;
             if (source != null) source.PlayOneShot(Pick(bodyHits, hit), headshot ? .46f : .32f);
+            if(playerWeapon!=null && target==playerWeapon.GetComponent<Health>() && Time.time>=nextPain)
+            {
+                var clip=Pick(pain,null);
+                if(clip!=null){voiceSource.PlayOneShot(clip,.36f);nextPain=Time.time+1.2f;}
+            }
         }
         private void OnSurfaceHit(RaycastHit hitInfo)
         {

@@ -17,6 +17,7 @@ namespace LastStep.AI
         private enum Personality { Precision, Aggressive, Defensive, Elite }
         private Personality personality;
         private float anchorX, targetX, nextShift;
+        private int tier;
         public EnemyState State { get; private set; } = EnemyState.Idle;
         public float ReactionTime { get; private set; }
 
@@ -54,6 +55,7 @@ namespace LastStep.AI
         private void OnFire()
         {
             var game = GameManager.Instance;
+            tier=game!=null?game.DifficultyIndex:0;
             int index = game != null && game.IsPractice ? game.PracticeOpponentIndex : game != null ? game.OpponentIndex : 0;
             personality = game != null && game.DifficultyIndex == 3 ? Personality.Elite :
                 (Personality)(index % 3);
@@ -66,16 +68,16 @@ namespace LastStep.AI
         private void Update()
         {
             if (duel == null || !duel.IsFireAllowed || enemyHealth == null || !enemyHealth.IsAlive) return;
-            if (personality == Personality.Precision) return;
+            if (personality == Personality.Precision && tier<2) return;
             if (Time.time >= nextShift)
             {
-                float width = personality == Personality.Defensive ? 1.1f : .7f;
+                float width = (personality == Personality.Defensive ? 1.1f : .8f)+tier*.22f;
                 targetX = anchorX + Random.Range(-width, width);
-                nextShift = Time.time + Random.Range(.85f, 1.7f);
+                nextShift = Time.time + Random.Range(.65f, 1.3f)/(1+tier*.12f);
             }
             var p = transform.position;
             p.x = Mathf.MoveTowards(p.x, targetX,
-                (personality == Personality.Elite ? 1.25f : .85f) * Time.deltaTime);
+                (1.0f+tier*.3f) * Time.deltaTime);
             transform.position = p;
         }
         private IEnumerator ShootAfterReaction()
@@ -92,11 +94,17 @@ namespace LastStep.AI
             {
                 if (weapon.Ammunition == 0) break;
                 State = EnemyState.Aiming;
-                yield return new WaitForSeconds(Mathf.Clamp(1f / difficulty.AimSpeed, 0.08f, 0.6f));
-                if (!duel.IsFireAllowed || !enemyHealth.IsAlive || !playerHealth.IsAlive) yield break;
                 // Aim at the animated hurt volume, not an assumed height on the actor root.
-                var chest = playerHealth.transform.Find("HitZones/Chest");
+                bool headshot=Random.value<difficulty.CriticalHitChance;
+                var chest = playerHealth.transform.Find(headshot?"HitZones/Head":"HitZones/Chest");
                 Vector3 point = chest != null ? chest.position : playerHealth.transform.position + Vector3.up * 1.2f;
+                float aimTime=Mathf.Clamp(1f/difficulty.AimSpeed,.10f,.6f);
+                var movement=playerHealth.GetComponent<LastStep.Player.PlayerMovement>();
+                // Commit before firing. Higher tiers lead observed motion, but a direction
+                // change during this aim window can still evade the shot.
+                if(movement!=null)point+=Vector3.ClampMagnitude(movement.Velocity,4.8f)*aimTime*Mathf.Lerp(.15f,.8f,tier/3f);
+                yield return new WaitForSeconds(aimTime);
+                if (!duel.IsFireAllowed || !enemyHealth.IsAlive || !playerHealth.IsAlive) yield break;
                 float precision = personality == Personality.Precision ? .78f :
                     personality == Personality.Aggressive ? 1.18f : personality == Personality.Elite ? .7f : 1f;
                 float spread = Mathf.Lerp(.6f, .025f, difficulty.Accuracy) * precision;

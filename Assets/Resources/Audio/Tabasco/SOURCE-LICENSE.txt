@@ -1,0 +1,10 @@
+Pistol.wav derives from sounds/cz.wav, Gunshot Sounds by Tabasco / Vincent Sevedge.
+Source: https://opengameart.org/content/gunshot-sounds
+Downloaded 2026-10-17. The OGA page offers CC0, but the archive includes:
+Copyright (c) 2009 Vincent Sevedge
+Audio and Visual content is covered under Creative Commons Attribution 3.0 Unported.
+https://creativecommons.org/licenses/by/3.0/
+We retain that attribution and use the more conservative CC-BY-3.0 terms.
+Changes: extracted one 0.808-second CZ pistol report, mixed stereo to mono,
+removed DC, normalized to 0.9 peak, applied short entrance and tail fades.
+No endorsement by the original author is implied.
